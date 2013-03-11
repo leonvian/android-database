@@ -1,0 +1,17 @@
+<resources>
+
+    <string name="app_name">DataBaseAndroidProject</string>
+    <string name="hello_world">Hello world!</string>
+    <string name="menu_settings">Settings</string>
+    <string name="title_activity_main">MainActivity</string>
+
+    
+        <string name="falha_salvar">Falha ao salvar!</string>
+        <string name="falha_recuperar">Falha ao recuperar!</string>
+        <string name="falha_deletar">Falha ao deletar!</string>
+        <string name="falha_alterar">Falha ao alterar!</string>
+        
+   
+        <string name="e_necessario_informar">É necessario informar a annotation:</string>
+        
+</resources>
