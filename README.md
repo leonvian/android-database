@@ -6,6 +6,7 @@ It's a simple framework for encapsulation of database part in a project.
 
 Create your entities class and make them implement EntitiePersistable interface.
 
+<code>
 public class Person implements EntitiePersistable {
 	
 	private static final long serialVersionUID = -7229425725674363296L;
@@ -20,11 +21,12 @@ public class Person implements EntitiePersistable {
 	
 // getters and setters	
 }
+</code>
 
 Now, for each entitie class you have to create a DAO class to encapsulate persistence responsabilities.
 
 public class PersonDAO extends BaseDAO<Person>{
-
+<code>
 	public PersonDAO(Context context) {
 		super(context);
 	}
@@ -39,11 +41,11 @@ public class PersonDAO extends BaseDAO<Person>{
 		return Person.class;
 	} 
 }
-
+</code>
 A example of a implementation of OpenHelperDatabase class using the framework.
 
-
-public class MyDatabaseHelper extends DatabaseHelper {
+<code>
+public class MyDatabaseHelper extends DatabaseHelper { 
 	
 	private static final String DATABASE_NAME = "PersonEntry";
 	private static final int DATABASE_VERSION = 1;
@@ -72,7 +74,7 @@ public class MyDatabaseHelper extends DatabaseHelper {
 		return updateScript;
 	}
 }
-
+</code>
 In your project you just have to instantiate PersonDAO and use the utilities methods to save, delete, retrieve, and edit data.
 
 Note: This project should be a good idea for small projects. Big projects requires more elaborate projects. 
