@@ -14,7 +14,6 @@ import android.content.ContentValues;
 import android.database.Cursor;
 import android.database.DatabaseUtils;
 
-import com.example.databaseandroidproject.R;
 import com.lvc.database.annotation.Column;
 import com.lvc.database.annotation.IgnoreColumn;
 import com.lvc.database.annotation.PrimaryKey;
@@ -29,7 +28,7 @@ public abstract class BaseDAOReflection<T extends EntitiePersistable> {
 	private String[] atributesToIgnore = {
 			"serialVersionUID"
 	};
-	
+
 	private static final String PRIMARY_KEY_NOT_FOUND = "Não foi possível informar Primary Key, certifique-se de que utilizou a anotação PRIMARY KEY nas suas entidades";
 
 
@@ -51,6 +50,29 @@ public abstract class BaseDAOReflection<T extends EntitiePersistable> {
 		return getFields(getEntitieClass());
 	}
 
+	private List<Field> getFields(boolean ignorePrimaryKey) {
+		List<Field> fields = getFields(getEntitieClass());
+
+		if(!ignorePrimaryKey)
+			return fields;
+
+		List<Field> fieldsSemPrimaryKey = new ArrayList<Field>();
+		for(Field field : fields) {
+
+			if(field.isAnnotationPresent(PrimaryKey.class)) {
+
+				PrimaryKey primaryKey = field.getAnnotation(PrimaryKey.class);
+				if(!primaryKey.autoIncrement())
+					fieldsSemPrimaryKey.add(field);
+
+			} else {
+				fieldsSemPrimaryKey.add(field);
+			}
+		}
+		return fieldsSemPrimaryKey;
+
+	}
+
 	private <Z>List<Method> getMethods(Class<Z> entitieClass) {
 		Method[] methods = entitieClass.getDeclaredMethods();
 		List<Method> listMethods = Arrays.asList(methods);
@@ -70,26 +92,26 @@ public abstract class BaseDAOReflection<T extends EntitiePersistable> {
 			String atributeName = field.getName();
 			if(!isIgnorable(atributeName) && !isConstant(field) && !field.isAnnotationPresent(IgnoreColumn.class))  
 				fields.add(field);	
-		
+
 		}
 
 		return fields; 
 
 	}
 
-	
+
 	private boolean isConstant(Field field) {
-		
+
 		if(Modifier.isFinal(field.getModifiers())) {
 			return true;
 		}
-		
+
 		if(field.isEnumConstant()) {
 			return true;
 		}
-		
+
 		return false;
-		
+
 	}
 
 	public abstract Class<T> getEntitieClass();
@@ -115,15 +137,15 @@ public abstract class BaseDAOReflection<T extends EntitiePersistable> {
 
 		ContentValues contentValues = new ContentValues();
 		DatabaseUtils.cursorRowToContentValues(cursor, contentValues);
-		List<Field> listFields = getFields();
+		List<Field> listFields = getFields(false);
 		T entitie = contentValuesToObject(contentValues, listFields);
 
 		return entitie;
 	}
 
 	public Field getPrimaryKeyField() throws AndroidDataBaseException {
-		
-		List<Field> listFields = getFields();
+
+		List<Field> listFields = getFields(false);
 		for(Field field : listFields) {
 			if(field.isAnnotationPresent(PrimaryKey.class)) {
 				return field;
@@ -134,7 +156,7 @@ public abstract class BaseDAOReflection<T extends EntitiePersistable> {
 		throw new AndroidDataBaseException(PRIMARY_KEY_NOT_FOUND);
 
 	}
-	
+
 
 	public T contentValuesToObject(ContentValues contentValues, List<Field> listFields) throws InstantiationException, IllegalAccessException, ReflectionException {
 
@@ -165,7 +187,7 @@ public abstract class BaseDAOReflection<T extends EntitiePersistable> {
 			case INTEGER_PRIMITIVE:
 				parameter = contentValues.getAsInteger(columnName);
 				break;
-				
+
 			case LONG:
 				parameter = contentValues.getAsLong(columnName);
 				break;
@@ -235,9 +257,9 @@ public abstract class BaseDAOReflection<T extends EntitiePersistable> {
 		}
 	}
 
-	public  ContentValues generateContentValues(T entitie) throws ReflectionException {
+	public  ContentValues generateContentValues(T entitie, boolean ignorePrimaryKey) throws ReflectionException {
 		ContentValues contentValues = new ContentValues();
-		List<Field> listFields = getFields();
+		List<Field> listFields = getFields(ignorePrimaryKey);
 		for(Field field : listFields) {
 			String key = getColumnNameByField(field);
 

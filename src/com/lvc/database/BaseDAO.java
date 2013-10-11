@@ -23,7 +23,7 @@ public abstract class BaseDAO<T extends EntitiePersistable> extends BaseDAORefle
 
 	public BaseDAO(Context context) {
 		this.context = context;
-		openConnection();
+		openConnection(); 
 	}
 
 	public void openConnection() {
@@ -33,7 +33,7 @@ public abstract class BaseDAO<T extends EntitiePersistable> extends BaseDAORefle
 
 	public void reopenConnectionIfClose() {
 		if(dataBase == null || !dataBase.isOpen()) {
-			Log.e("SQLITE", "Reabrindo conex‹o!");
+			Log.e("SQLITE", "Reabrindo conex‹o reabrindo!");
 			openConnection();
 		}
 	}
@@ -82,7 +82,7 @@ public abstract class BaseDAO<T extends EntitiePersistable> extends BaseDAORefle
 
 			reopenConnectionIfClose();
 
-			ContentValues values = generateContentValues(entitie);
+			ContentValues values = generateContentValues(entitie, true);
 			return dataBase.insert(getTableName(), null, values);
 
 		} catch(Exception e) {
@@ -255,11 +255,8 @@ public abstract class BaseDAO<T extends EntitiePersistable> extends BaseDAORefle
 		try {
 
 			reopenConnectionIfClose();
-
-			ContentValues values = generateContentValues(entitie);
-
+			ContentValues values = generateContentValues(entitie,false);
 			Long id = getPrimaryKeyValue(entitie);
-
 			return dataBase.update(getTableName(), values, getIdColumnName() + " = ?", new String[] { String.valueOf(id) });
 
 		} catch(Exception e) {
