@@ -13,6 +13,7 @@ import java.util.List;
 import android.content.ContentValues;
 import android.database.Cursor;
 import android.database.DatabaseUtils;
+import android.util.Log;
 
 import com.lvc.database.annotation.Column;
 import com.lvc.database.annotation.IgnoreColumn;
@@ -32,25 +33,14 @@ public abstract class BaseDAOReflection<T extends EntitiePersistable> {
 	private static final String PRIMARY_KEY_NOT_FOUND = "Não foi possível informar Primary Key, certifique-se de que utilizou a anotação PRIMARY KEY nas suas entidades";
 
 
-	//protected List<Method> listMethods;
-	//protected List<Field> listFields;
+	protected List<Method> listMethods;
+	protected List<Field> listFields;
 
 	public BaseDAOReflection() {
 
 	}
 
-	private <Z>List<Field> getFields(Class<Z> entitieClass) {
-		Field[] fieldsArray = entitieClass.getDeclaredFields();
-		List<Field> listFields = arrayToListWithoutIgnorableFields(fieldsArray);
-
-		return listFields;
-	}
-
-	private List<Field> getFields() {
-		return getFields(getEntitieClass());
-	}
-
-	private List<Field> getFields(boolean ignorePrimaryKey) {
+	private List<Field> getFields(boolean ignorePrimaryKey) { 
 		List<Field> fields = getFields(getEntitieClass());
 
 		if(!ignorePrimaryKey)
@@ -73,16 +63,30 @@ public abstract class BaseDAOReflection<T extends EntitiePersistable> {
 
 	}
 
-	private <Z>List<Method> getMethods(Class<Z> entitieClass) {
-		Method[] methods = entitieClass.getDeclaredMethods();
-		List<Method> listMethods = Arrays.asList(methods);
+	private <Z>List<Field> getFields(Class<Z> entitieClass) {
 
-		return listMethods;
+		if(listFields == null || listFields.isEmpty()) {
+			Field[] fieldsArray = entitieClass.getDeclaredFields();
+			listFields = arrayToListWithoutIgnorableFields(fieldsArray);	
+		} 
+
+		return listFields;
 	}
+
 
 	private List<Method> getMethods() {
 		return getMethods(getEntitieClass());
 	}
+
+	private <Z>List<Method> getMethods(Class<Z> entitieClass) { 
+		if(listMethods == null || listMethods.isEmpty()) {
+			Method[] methods = entitieClass.getDeclaredMethods();
+			listMethods = Arrays.asList(methods);	
+		} 
+		
+		return listMethods;
+	}
+
 
 	private List<Field> arrayToListWithoutIgnorableFields(Field[] fieldsArray) {
 		List<Field> fields = new ArrayList<Field>();
