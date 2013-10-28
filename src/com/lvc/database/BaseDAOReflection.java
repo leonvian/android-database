@@ -83,7 +83,7 @@ public abstract class BaseDAOReflection<T extends EntitiePersistable> {
 			Method[] methods = entitieClass.getDeclaredMethods();
 			listMethods = Arrays.asList(methods);	
 		} 
-		
+
 		return listMethods;
 	}
 
@@ -95,12 +95,10 @@ public abstract class BaseDAOReflection<T extends EntitiePersistable> {
 
 			String atributeName = field.getName();
 			if(!isIgnorable(atributeName) && !isConstant(field) && !field.isAnnotationPresent(IgnoreColumn.class))  
-				fields.add(field);	
+				fields.add(field);	 
+		} 
 
-		}
-
-		return fields; 
-
+		return fields;  
 	}
 
 
@@ -134,14 +132,20 @@ public abstract class BaseDAOReflection<T extends EntitiePersistable> {
 		return entitie;
 	}
 
+
 	public T cursorToEntitie(Cursor cursor) throws InstantiationException, IllegalAccessException, ReflectionException {
+		List<Field> listFields = getFields(false);
+		T entite = cursorToEntitie(cursor, listFields);
+		return entite;
+	}
+
+	protected T cursorToEntitie(Cursor cursor, List<Field> listFields) throws InstantiationException, IllegalAccessException, ReflectionException {
 
 		if(cursor == null || cursor.getCount() == 0)
 			return null;
 
 		ContentValues contentValues = new ContentValues();
-		DatabaseUtils.cursorRowToContentValues(cursor, contentValues);
-		List<Field> listFields = getFields(false);
+		DatabaseUtils.cursorRowToContentValues(cursor, contentValues); 
 		T entitie = contentValuesToObject(contentValues, listFields);
 
 		return entitie;
@@ -161,6 +165,30 @@ public abstract class BaseDAOReflection<T extends EntitiePersistable> {
 
 	}
 
+	protected boolean existThisColumn(String columnTarget) { 
+		List<Field> fields = getFields(getEntitieClass());
+
+		for(Field field : fields) {
+			String columnName = getColumnNameByField(field);
+			if(columnTarget.equalsIgnoreCase(columnName))
+				return true;
+		}
+
+		return false;
+	}
+	
+	protected Field getFieldByName(String columnTarget) {
+		List<Field> fields = getFields(getEntitieClass());
+
+		for(Field field : fields) {
+			String columnName = getColumnNameByField(field);
+			if(columnTarget.equalsIgnoreCase(columnName))
+				return field;
+		}
+
+		throw new AndroidDataBaseException("Column " + columnTarget + " Not found. Class target: " + getEntitieClass());
+	}
+	
 
 	public T contentValuesToObject(ContentValues contentValues, List<Field> listFields) throws InstantiationException, IllegalAccessException, ReflectionException {
 
