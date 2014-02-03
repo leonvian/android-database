@@ -1,4 +1,4 @@
-# built application files
+#application files
 *.apk
 *.ap_
 
@@ -9,12 +9,22 @@
 *.class
 
 # generated files
+*.iml
+.idea/
+.gradle/
 bin/
 gen/
+build/
+tests/lib/
+tests/gen/
+tests/bin/
 
 # Local configuration file (sdk path, etc)
+.DS_Store
 local.properties
-
-# Eclipse project files
-.classpath
-.project
+tests/local.properties
+.svn
+*.svn
+.settings
+*.classpath
+project.properties
