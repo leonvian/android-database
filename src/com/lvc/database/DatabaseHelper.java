@@ -7,8 +7,11 @@ import android.util.Log;
 
 public abstract class DatabaseHelper extends SQLiteOpenHelper {
 
+	protected Context context;
+	
 	public DatabaseHelper(Context context, String dataBaseName, int dataBaseVersion) {
 		super(context, dataBaseName, null, dataBaseVersion);
+		this.context = context;
 	}
 
 	// Creating Tables
