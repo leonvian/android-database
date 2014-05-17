@@ -127,7 +127,7 @@ public class TableUtils {
 		createTableValue =createTableValue.substring(0,index);
 
 		String createTableScript = createTableValue.concat(")");
-		Log.i("TABLE CREATED", "Script criação tabela : " + createTableScript);
+		Log.i("TABLE CREATED", "Script criaÔøΩÔøΩo tabela : " + createTableScript);
 		
 		return createTableScript;
 	}
@@ -145,8 +145,9 @@ public class TableUtils {
 
 	private static boolean isToIgnore(Field field) {
 
-		if(field.isAnnotationPresent(IgnoreColumn.class)) 
+		if(field.isAnnotationPresent(IgnoreColumn.class)) {
 			return true;
+		}	
 
 		if(Modifier.isFinal(field.getModifiers())) {
 			return true;

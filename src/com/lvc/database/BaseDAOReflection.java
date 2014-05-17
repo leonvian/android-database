@@ -13,14 +13,17 @@ import java.util.List;
 import android.content.ContentValues;
 import android.database.Cursor;
 import android.database.DatabaseUtils;
-import android.util.Log;
 
 import com.lvc.database.annotation.Column;
 import com.lvc.database.annotation.IgnoreColumn;
 import com.lvc.database.annotation.PrimaryKey;
+import com.lvc.database.annotation.SaveAsString;
+import com.lvc.database.util.DataSerializer;
 
 public abstract class BaseDAOReflection<T extends EntitiePersistable> {
 
+	
+	public static final String FORMAT_DATE = "yyyy-MM-dd HH:mm:ss";
 
 	private static final String PREFIX_SET_METHODS = "set";
 	private static final String PREFIX_GET_METHODS = "get";
@@ -30,7 +33,7 @@ public abstract class BaseDAOReflection<T extends EntitiePersistable> {
 			"serialVersionUID"
 	};
 
-	private static final String PRIMARY_KEY_NOT_FOUND = "Não foi possível informar Primary Key, certifique-se de que utilizou a anotação PRIMARY KEY nas suas entidades";
+	private static final String PRIMARY_KEY_NOT_FOUND = "Nao foi possivel encontrar a Primary Key, certifique-se de que utilizou a anotacao PRIMARY KEY nas suas entidades";
 
 
 	protected List<Method> listMethods;
@@ -161,7 +164,7 @@ public abstract class BaseDAOReflection<T extends EntitiePersistable> {
 		}
 
 
-		throw new AndroidDataBaseException(PRIMARY_KEY_NOT_FOUND);
+		throw new AndroidDataBaseException(PRIMARY_KEY_NOT_FOUND + getEntitieClass());
 
 	}
 
@@ -196,7 +199,7 @@ public abstract class BaseDAOReflection<T extends EntitiePersistable> {
 	}
 
 	/**
-	 *  Método usado para converter um ContentValues em um objeto de negócio após o mesmo ter sido recuperado da base.
+	 *  MÔøΩtodo usado para converter um ContentValues em um objeto de negÔøΩcio apÔøΩs o mesmo ter sido recuperado da base.
 	 */
 	public <Z>Z contentValuesToObject(ContentValues contentValues, List<Field> listFields, Class<Z> entitieTarget) throws InstantiationException, IllegalAccessException, ReflectionException {
 		Z entitie = entitieTarget.newInstance();
@@ -270,6 +273,11 @@ public abstract class BaseDAOReflection<T extends EntitiePersistable> {
 			default:
 				throw new ReflectionException("Nenhum tipo foi encontrado para: " + field.getClass().getName());
 			}
+			
+			if(field.isAnnotationPresent(SaveAsString.class)) {
+				Class classDeclared = field.getType();
+				parameter = DataSerializer.getInstance().toObject((String)parameter, classDeclared);
+			}
 
 			Method setMethod = getSetMethodByName(fieldName, entitieTarget);
 			invokeMethodWithParameter(entitie, setMethod,parameter);
@@ -278,7 +286,8 @@ public abstract class BaseDAOReflection<T extends EntitiePersistable> {
 
 		return entitie;
 	}
-
+	
+ 
 
 	public String getColumnNameByField(Field field) {
 		if(field.isAnnotationPresent(Column.class)) {
@@ -293,21 +302,30 @@ public abstract class BaseDAOReflection<T extends EntitiePersistable> {
 		ContentValues contentValues = new ContentValues();
 		List<Field> listFields = getFields(ignorePrimaryKey);
 		for(Field field : listFields) {
-			String key = getColumnNameByField(field);
+			String key = getColumnNameByField(field);			
+			Object value = getValueByField(entitie, field);
 
-			String fieldName = field.getName();
-			Method method = getGetMethodByName(fieldName);
-			Object value = invokeMethod(entitie, method);
-
-			carregarContentValue(contentValues, key, value);
+			loadContentValueByObjectField(contentValues, key, value);
 		}
 
 		return contentValues;
 	}
+	
+	private Object getValueByField(T entitie, Field field) throws ReflectionException {
+		String fieldName = field.getName();
+		Method method = getGetMethodByName(fieldName);
+		Object value = invokeMethod(entitie, method);
+		
+		if(field.isAnnotationPresent(SaveAsString.class)) {
+			value = DataSerializer.getInstance().toJson(value);
+		}
+		
+		return value;
+	}
 
 
 
-	private void carregarContentValue(ContentValues contentValues, String key, Object value) throws ReflectionException {
+	private void loadContentValueByObjectField(ContentValues contentValues, String key, Object value) throws ReflectionException {
 		if(value == null)
 			return;
 
@@ -384,12 +402,12 @@ public abstract class BaseDAOReflection<T extends EntitiePersistable> {
 		default:
 			break;
 		}
-
-
 	}
+	
+	
 
 	protected String toDateTime(Date data) {
-		SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss"); 
+		SimpleDateFormat dateFormat = new SimpleDateFormat(FORMAT_DATE); 
 		String dateTime = dateFormat.format(data);
 
 		return dateTime;
@@ -399,7 +417,7 @@ public abstract class BaseDAOReflection<T extends EntitiePersistable> {
 		if(data == null)
 			return null;
 		try {
-			SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss"); 
+			SimpleDateFormat dateFormat = new SimpleDateFormat(FORMAT_DATE); 
 			Date dateTime = dateFormat.parse(data);
 
 			return dateTime;	
@@ -415,7 +433,7 @@ public abstract class BaseDAOReflection<T extends EntitiePersistable> {
 			return method.invoke(entitie, null);
 		} catch (Exception e) {
 			e.printStackTrace();
-			throw new ReflectionException(e, "Falha ao invocar  método: " + method.getName());
+			throw new ReflectionException(e, "Falha ao invocar  mÔøΩtodo: " + method.getName());
 		} 
 	}
 
@@ -425,7 +443,7 @@ public abstract class BaseDAOReflection<T extends EntitiePersistable> {
 			return method.invoke(entitie, setParam);	
 		} catch (Exception e) {
 			e.printStackTrace();
-			throw new ReflectionException(e, "Falha ao invocar  método: " + method.getName());
+			throw new ReflectionException(e, "Falha ao invocar  mÔøΩtodo: " + method.getName());
 		} 
 	}
 
@@ -471,7 +489,7 @@ public abstract class BaseDAOReflection<T extends EntitiePersistable> {
 				return method;
 		}		
 
-		throw new RuntimeException("Método " + prefix + " não encontrado para o valor: " + attributeName + " Tentou achar: " + nameMethodSet + " Classe alvo: " + getEntitieClass().getName());
+		throw new RuntimeException("MÔøΩtodo " + prefix + " nÔøΩo encontrado para o valor: " + attributeName + " Tentou achar: " + nameMethodSet + " Classe alvo: " + getEntitieClass().getName());
 	}
 
 	private boolean isIgnorable(String atributeName) {

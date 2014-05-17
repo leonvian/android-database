@@ -3,10 +3,17 @@ package com.lvc.database;
 import java.lang.reflect.Field;
 import java.util.Date;
 
+import com.lvc.database.annotation.SaveAsString;
+
 public class TypeFinder {
 
 	
 	public static FieldType getFieldType(Field field) throws ReflectionException {
+		
+		if(field.isAnnotationPresent(SaveAsString.class)) {
+			return FieldType.STRING;
+		}
+		
 		return getFieldType(field.getType());
 	}
 	
@@ -52,7 +59,7 @@ public class TypeFinder {
 		
 		
 		else {
-			throw new ReflectionException("O tipo : " +targetClass.getName() + " n‹o foi encontrado!");
+			throw new ReflectionException("O tipo : " +targetClass.getName() + " nï¿½o foi encontrado!");
 		}
 		
 	}
