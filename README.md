@@ -77,5 +77,3 @@ public class MyDatabaseHelper extends DatabaseHelper {
 </code>
 In your project you just have to instantiate PersonDAO and use the utilities methods to save, delete, retrieve, and edit data.
 
-Note: This project should be a good idea for small projects. Big projects requires more elaborate projects. 
-
