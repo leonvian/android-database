@@ -251,6 +251,7 @@ public abstract class BaseDAOReflection<T extends EntitiePersistable> {
 				String data = contentValues.getAsString(columnName);
 				parameter = toDateTime(data);
 				break;
+				 
 
 			case BOOLEAN:
 				Integer result = contentValues.getAsInteger(columnName);
@@ -269,6 +270,10 @@ public abstract class BaseDAOReflection<T extends EntitiePersistable> {
 					parameter = true;
 				}
 				break;
+				
+			case BYTE_ARRAY:
+				parameter = contentValues.getAsByteArray(columnName);
+				break;
 
 			default:
 				throw new ReflectionException("Nenhum tipo foi encontrado para: " + field.getClass().getName());
@@ -276,7 +281,7 @@ public abstract class BaseDAOReflection<T extends EntitiePersistable> {
 			
 			if(field.isAnnotationPresent(SaveAsString.class)) {
 				Class classDeclared = field.getType();
-				parameter = DataSerializer.getInstance().toObject((String)parameter, classDeclared);
+				parameter = getDataSerializer().toObject((String)parameter, classDeclared);
 			}
 
 			Method setMethod = getSetMethodByName(fieldName, entitieTarget);
@@ -317,13 +322,19 @@ public abstract class BaseDAOReflection<T extends EntitiePersistable> {
 		Object value = invokeMethod(entitie, method);
 		
 		if(field.isAnnotationPresent(SaveAsString.class)) {
-			value = DataSerializer.getInstance().toJson(value);
+			value = getDataSerializer().toJson(value);
 		}
 		
 		return value;
 	}
 
-
+	/**
+	 * Is allow save data as String.
+	 * This framework can save a Map by example, as JSON.
+	 * For this you need to inform your own JSON Serializer.
+	 * @return
+	 */
+   public  abstract DataSerializer getDataSerializer();
 
 	private void loadContentValueByObjectField(ContentValues contentValues, String key, Object value) throws ReflectionException {
 		if(value == null)
@@ -398,6 +409,9 @@ public abstract class BaseDAOReflection<T extends EntitiePersistable> {
 				contentValues.put(key, (Long)value);
 			break;
 
+		case BYTE_ARRAY:
+			contentValues.put(key, (byte[])value);
+			break;
 
 		default:
 			break;

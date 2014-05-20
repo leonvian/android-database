@@ -102,6 +102,10 @@ public class TableUtils {
 				case LONG_PRIMITIVE:
 					stringBuilder.append(" LONG");
 					break;
+					
+				case BYTE_ARRAY:
+					stringBuilder.append(" BLOB");
+					break;
 
 				default:
 					throw new ReflectionException("Nenhum tipo foi encontrado para: " + field.getClass().getName());

@@ -15,6 +15,7 @@ import android.util.Log;
 
 import com.example.databaseandroidproject.R;
 import com.lvc.database.annotation.TableName;
+import com.lvc.database.util.DataSerializer;
 
 public abstract class BaseDAO<T extends EntitiePersistable> extends BaseDAOReflection<T> {
 
@@ -41,13 +42,21 @@ public abstract class BaseDAO<T extends EntitiePersistable> extends BaseDAORefle
 
 	public void reopenConnectionIfClose() {
 		if(dataBase == null || !dataBase.isOpen()) {
-			Log.e("SQLITE", "Reabrindo conex‹o reabrindo!");
+			Log.e("SQLITE", "Reabrindo conexï¿½o reabrindo!");
 			openConnection();
 		}
 	}
 
 	public Context getContext() {
 		return context;
+	}
+	/**
+	 * By default is null.
+	 * But this method should be overrided in case of save a data as String.
+	 */
+	@Override
+	public DataSerializer getDataSerializer() {
+		return null;
 	}
 
 	public abstract SQLiteOpenHelper getDataBaseHelper();

@@ -2,6 +2,7 @@ package com.lvc.database;
 
 public enum FieldType {
 
+	BYTE_ARRAY,
 	
 	STRING,
 	

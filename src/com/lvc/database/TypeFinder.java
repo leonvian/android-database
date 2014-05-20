@@ -57,6 +57,8 @@ public class TypeFinder {
 		else if(targetClass.isAssignableFrom(long.class) ) 
 			return FieldType.LONG_PRIMITIVE;
 		
+		else if(targetClass.isAssignableFrom(byte[].class) ) 
+			return FieldType.BYTE_ARRAY;
 		
 		else {
 			throw new ReflectionException("O tipo : " +targetClass.getName() + " n�o foi encontrado!");
