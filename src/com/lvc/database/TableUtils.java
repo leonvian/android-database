@@ -54,54 +54,38 @@ public class TableUtils {
 				FieldType type = TypeFinder.getFieldType(field);
 
 				switch (type) {
-
-				case STRING:
-					stringBuilder.append(" TEXT");
-					break;
-
-				case INTEGER:
-					stringBuilder.append(" INTEGER");
-					break;
-
-				case INTEGER_PRIMITIVE:
-					stringBuilder.append(" INTEGER");
-					break;
-					
+  
 				case DOUBLE:
-					stringBuilder.append(" DOUBLE");
-					break;
-
 				case DOUBLE_PRIMITIVE:
 					stringBuilder.append(" DOUBLE");
 					break;
-
+					
 				case FLOAT:
-					stringBuilder.append(" FLOAT");
-					break;
-
 				case FLOAT_PRIMITIVE:
 					stringBuilder.append(" FLOAT");
 					break;
 
+				case STRING:
 				case DATE:
 					stringBuilder.append(" TEXT");
 					break;
 
 				case BOOLEAN:
-					stringBuilder.append(" INTEGER");
-					break;
-
 				case BOOlEAN_PRIMITIVE:
+				case BYTE:
+				case BYTE_PRIMITIVE:
+					stringBuilder.append(" TINYINT");
+					break;
+					
+				case INTEGER:
+				case INTEGER_PRIMITIVE:
 					stringBuilder.append(" INTEGER");
 					break;
 
 				case LONG:
-					stringBuilder.append(" LONG");
-					break;
-
 				case LONG_PRIMITIVE:
 					stringBuilder.append(" LONG");
-					break;
+					break; 
 					
 				case BYTE_ARRAY:
 					stringBuilder.append(" BLOB");

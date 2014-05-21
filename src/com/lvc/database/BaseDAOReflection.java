@@ -213,6 +213,14 @@ public abstract class BaseDAOReflection<T extends EntitiePersistable> {
 			switch (type) {
 			case STRING:
 				parameter = contentValues.getAsString(columnName);
+				break; 
+				
+			case BYTE:
+				parameter = contentValues.getAsByte(columnName);
+				break;
+
+			case BYTE_PRIMITIVE:
+				parameter = contentValues.getAsByte(columnName);
 				break;
 
 			case INTEGER:
@@ -283,6 +291,16 @@ public abstract class BaseDAOReflection<T extends EntitiePersistable> {
 				Class classDeclared = field.getType();
 				parameter = getDataSerializer().toObject((String)parameter, classDeclared);
 			}
+			
+			if(field.isAnnotationPresent(PrimaryKey.class)) {
+				
+				if(field.getType().isAssignableFrom(long.class) || field.getType().isAssignableFrom(Long.class)) { 
+					PrimaryKey primaryKey = field.getAnnotation(PrimaryKey.class);
+					if(primaryKey.autoIncrement()) {
+						parameter = Long.valueOf((Integer)parameter);
+					}  
+				} 
+			}
 
 			Method setMethod = getSetMethodByName(fieldName, entitieTarget);
 			invokeMethodWithParameter(entitie, setMethod,parameter);
@@ -347,6 +365,17 @@ public abstract class BaseDAOReflection<T extends EntitiePersistable> {
 		switch (type) {
 		case STRING:
 			contentValues.put(key, (String)value);
+			break;
+			
+		case BYTE:
+			contentValues.put(key, (Byte)value);
+			break;
+
+		case BYTE_PRIMITIVE:
+			if(value == null)
+				contentValues.put(key, 0);
+			else
+				contentValues.put(key, (Byte)value);
 			break;
 
 		case INTEGER:

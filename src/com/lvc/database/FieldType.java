@@ -17,6 +17,9 @@ public enum FieldType {
 	LONG,
 	LONG_PRIMITIVE,
 	
+	BYTE,
+	BYTE_PRIMITIVE,
+	
 	BOOLEAN,
 	BOOlEAN_PRIMITIVE,
 	

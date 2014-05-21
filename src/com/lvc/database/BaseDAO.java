@@ -137,30 +137,44 @@ public abstract class BaseDAO<T extends EntitiePersistable> extends BaseDAORefle
 		}
 	}
 
-
 	public long saveAll(Collection<T> elements) throws AndroidDataBaseException {
 		long result = 0;
 
 		reopenConnectionIfClose();
 
-		for(T entitie : elements) {
-			result = save(entitie);
-			if(result == -1) 
-				return result;
+		dataBase.beginTransaction();
+
+		try {
+			for(T entitie : elements) {
+				result = save(entitie);
+				if(result == -1) 
+					return result;
+			}
+
+			dataBase.setTransactionSuccessful();
+		} finally {
+			dataBase.endTransaction();
 		}
 
 		return result;
 	}
-
-
 
 	public long saveOrUpdadeAll(Collection<T> elements) throws AndroidDataBaseException {
 		long result = 0;
 
 		reopenConnectionIfClose();
 
-		for(T entitie : elements) {
-			saveOrUpdade(entitie);
+		dataBase.beginTransaction();
+
+		try {
+
+			for(T entitie : elements) {
+				saveOrUpdade(entitie);
+			}
+
+			dataBase.setTransactionSuccessful();
+		} finally {
+			dataBase.endTransaction();
 		}
 
 		return result;
@@ -250,7 +264,7 @@ public abstract class BaseDAO<T extends EntitiePersistable> extends BaseDAORefle
 				if (cursor.moveToFirst()) {
 					do {
 						T entitie = null;
-						
+
 						if(returnAllColumns) {
 							entitie = cursorToEntitie(cursor);
 						} else {
@@ -258,7 +272,7 @@ public abstract class BaseDAO<T extends EntitiePersistable> extends BaseDAORefle
 							List<Field> selectedFields = getFieldsByColumnName(selectColumnsArray);
 							entitie = cursorToEntitie(cursor, selectedFields);
 						}
-						
+
 						elementsList.add(entitie);
 					} while (cursor.moveToNext());
 				}
