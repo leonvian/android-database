@@ -390,6 +390,16 @@ public abstract class BaseDAO<T extends EntitiePersistable> extends BaseDAORefle
 		}
 
 	}
+	
+	public T retrieveOneElementOrThrowException(String where) throws NoElementFoundException {
+		String myQuery = SELECT_ALL_FROM + " " + getTableName() + " WHERE " + where + " LIMIT 1";
+		List<T> elements = getAllElements(myQuery);
+		if(elements.isEmpty()) {
+			throw new NoElementFoundException("No element was found for query: " + myQuery);
+		} else {
+			return elements.get(0);
+		} 
+	}
 
 
 	public int update(T entitie) throws AndroidDataBaseException {
@@ -462,6 +472,4 @@ public abstract class BaseDAO<T extends EntitiePersistable> extends BaseDAORefle
 
 		dataBase = null;
 	}
-
-
 }
