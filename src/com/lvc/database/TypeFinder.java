@@ -8,6 +8,11 @@ import com.lvc.database.annotation.SaveAsBytes;
 import com.lvc.database.annotation.SaveAsString;
 
 public class TypeFinder {
+	
+	public static FieldType getFieldTypeWithoutAnnotationVerification(Field field) throws ReflectionException {
+  
+		return getFieldType(field.getType());
+	}
 
 
 	public static FieldType getFieldType(Field field) throws ReflectionException {

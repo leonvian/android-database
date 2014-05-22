@@ -65,10 +65,8 @@ public abstract class BaseDAO<T extends EntitiePersistable> extends BaseDAORefle
 		Field fieldPrimary = getPrimaryKeyField();
 		return getColumnNameByField(fieldPrimary); 
 	}
-
-
-
-	public long getPrimaryKeyValue(T entitie) throws AndroidDataBaseException, ReflectionException {
+ 
+	private long getPrimaryKeyValue(T entitie) throws AndroidDataBaseException, ReflectionException {
 		String fieldPrimary = getPrimaryKeyField().getName();
 		Method method = getGetMethodByName(fieldPrimary);
 		Object objReturn = invokeMethod(entitie, method);
@@ -81,9 +79,26 @@ public abstract class BaseDAO<T extends EntitiePersistable> extends BaseDAORefle
 			return primaryKeyValue.longValue();
 		} else {
 			return (Long)objReturn;	
+		} 
+	}
+	
+	private void setPrimaryKeyValue(T entitie, Long value) throws AndroidDataBaseException, ReflectionException { 
+		Field primaryKeyField = getPrimaryKeyField();
+		String fieldPrimary = primaryKeyField.getName();
+		Method method = getSetMethodByName(fieldPrimary);
+		
+		FieldType type = TypeFinder.getFieldTypeWithoutAnnotationVerification(primaryKeyField);
+		
+		if(type == FieldType.INTEGER || type == FieldType.INTEGER_PRIMITIVE) {
+			int valueInt = value.intValue();
+			invokeMethodWithParameter(entitie, method, valueInt);
+		} else if(type == FieldType.LONG || type == FieldType.LONG_PRIMITIVE) {
+			invokeMethodWithParameter(entitie, method, value);	
+		} else {
+			return;
 		}
-
-
+		
+		 
 	}
 
 	public String getTableName() {
@@ -103,7 +118,9 @@ public abstract class BaseDAO<T extends EntitiePersistable> extends BaseDAORefle
 			reopenConnectionIfClose();
 
 			ContentValues values = generateContentValues(entitie, true);
-			return dataBase.insert(getTableName(), null, values);
+			long insertedId = dataBase.insert(getTableName(), null, values); 
+			setPrimaryKeyValue(entitie, insertedId);
+			return insertedId;
 
 		} catch(Exception e) {
 			e.printStackTrace();
@@ -119,7 +136,7 @@ public abstract class BaseDAO<T extends EntitiePersistable> extends BaseDAORefle
 
 			Long id = getPrimaryKeyValue(entitie);
 
-			if(id == 0) 
+			if(id == null || id == 0) 
 				save(entitie);
 			else 
 				saveOrUpdateIfExist(entitie, id);
