@@ -4,6 +4,7 @@ import java.lang.reflect.Field;
 import java.util.Date;
 
 import com.lvc.database.annotation.PrimaryKey;
+import com.lvc.database.annotation.SaveAsBytes;
 import com.lvc.database.annotation.SaveAsString;
 
 public class TypeFinder {
@@ -13,6 +14,10 @@ public class TypeFinder {
 
 		if(field.isAnnotationPresent(SaveAsString.class)) {
 			return FieldType.STRING;
+		}
+		
+		if(field.isAnnotationPresent(SaveAsBytes.class)) {
+			return FieldType.BYTE_ARRAY;
 		}
 
 		if(field.isAnnotationPresent(PrimaryKey.class)) {

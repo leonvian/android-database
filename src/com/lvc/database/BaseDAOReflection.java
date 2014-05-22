@@ -17,8 +17,10 @@ import android.database.DatabaseUtils;
 import com.lvc.database.annotation.Column;
 import com.lvc.database.annotation.IgnoreColumn;
 import com.lvc.database.annotation.PrimaryKey;
+import com.lvc.database.annotation.SaveAsBytes;
 import com.lvc.database.annotation.SaveAsString;
 import com.lvc.database.util.DataSerializer;
+import com.lvc.database.util.DataSerializerByte;
 
 public abstract class BaseDAOReflection<T extends EntitiePersistable> {
 
@@ -292,6 +294,11 @@ public abstract class BaseDAOReflection<T extends EntitiePersistable> {
 				parameter = getDataSerializer().toObject((String)parameter, classDeclared);
 			}
 			
+			if(field.isAnnotationPresent(SaveAsBytes.class)) {
+				Class classDeclared = field.getType();
+				parameter = DataSerializerByte.toObject((byte[])parameter);
+			}
+			
 			if(field.isAnnotationPresent(PrimaryKey.class)) {
 				
 				if(field.getType().isAssignableFrom(long.class) || field.getType().isAssignableFrom(Long.class)) { 
@@ -310,8 +317,7 @@ public abstract class BaseDAOReflection<T extends EntitiePersistable> {
 		return entitie;
 	}
 	
- 
-
+	
 	public String getColumnNameByField(Field field) {
 		if(field.isAnnotationPresent(Column.class)) {
 			Column column = field.getAnnotation(Column.class);
@@ -341,6 +347,10 @@ public abstract class BaseDAOReflection<T extends EntitiePersistable> {
 		
 		if(field.isAnnotationPresent(SaveAsString.class)) {
 			value = getDataSerializer().toJson(value);
+		}
+		
+		if(field.isAnnotationPresent(SaveAsBytes.class)) {
+			value = DataSerializerByte.toByte(value);
 		}
 		
 		return value;

@@ -11,41 +11,53 @@ import java.io.StreamCorruptedException;
 
 public class DataSerializerByte {
 
-	public static byte[] toByte(Object target) throws IOException {
-		byte[] yourBytes =  null;
+	public static byte[] toByte(Object target) throws RuntimeException {
 
-		ByteArrayOutputStream bos = new ByteArrayOutputStream();
-		ObjectOutput out = null;
 		try {
-			out = new ObjectOutputStream(bos);   
-			out.writeObject(target);
-			yourBytes = bos.toByteArray();
-		} finally { 
-			if (out != null) {
-				out.close();
-			}
-			bos.close();
-		}
 
-		return yourBytes;
+
+			byte[] yourBytes =  null;
+
+			ByteArrayOutputStream bos = new ByteArrayOutputStream();
+			ObjectOutput out = null;
+			try {
+				out = new ObjectOutputStream(bos);   
+				out.writeObject(target);
+				yourBytes = bos.toByteArray();
+			} finally { 
+				if (out != null) {
+					out.close();
+				}
+				bos.close();
+			} 
+			return yourBytes;
+
+		} catch (Exception e) {
+			throw new RuntimeException(e);
+		}
 	}
-	
-	public static Object toObject(byte[] yourBytes) throws StreamCorruptedException, IOException, ClassNotFoundException {
-		ByteArrayInputStream bis = new ByteArrayInputStream(yourBytes);
-		ObjectInput in = null;
-		Object o = null;
+
+	public static Object toObject(byte[] yourBytes) throws RuntimeException {
 		try {
-		  in = new ObjectInputStream(bis);
-		  o = in.readObject(); 
-		  
-		} finally {
-		    bis.close(); 
-		    if (in != null) {
-		      in.close();
-		    } 
+			ByteArrayInputStream bis = new ByteArrayInputStream(yourBytes);
+			ObjectInput in = null;
+			Object o = null;
+			try {
+				in = new ObjectInputStream(bis);
+				o = in.readObject(); 
+
+			} finally {
+				bis.close(); 
+				if (in != null) {
+					in.close();
+				} 
+			}
+
+			return o;
+
+		} catch (Exception e) {
+			throw new RuntimeException(e);
 		}
-		
-		return o;
 	}
 
 }
