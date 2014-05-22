@@ -23,9 +23,8 @@ public abstract class BaseDAO<T extends EntitiePersistable> extends BaseDAORefle
 	private static final String SELECT = "SELECT";
 	private static final String FROM = "FROM"; 
 	private static final String RETURN_ALL_SYMBOL = "*";
-	private static final String COMMA = ",";
-
-
+	private static final String COMMA = ","; 
+	
 	protected SQLiteDatabase dataBase;
 	private Context context;
 
