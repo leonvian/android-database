@@ -398,6 +398,11 @@ public abstract class BaseDAO<T extends EntitiePersistable> extends BaseDAORefle
 		String deleteQuery = "DELETE FROM " + getTableName();
 		dataBase.execSQL(deleteQuery);
 	}
+	
+	public void deleteByQuery(String deleteQuery) {
+		reopenConnectionIfClose();
+		dataBase.execSQL(deleteQuery);
+	}
 
 	public int count() {
 		String countQuery = "SELECT  * FROM " + getTableName();
