@@ -41,7 +41,7 @@ public abstract class BaseDAO<T extends EntitiePersistable> extends BaseDAORefle
 
 	public void reopenConnectionIfClose() {
 		if(dataBase == null || !dataBase.isOpen()) {
-			Log.e("SQLITE", "Reabrindo conex�o reabrindo!");
+			Log.e("SQLITE", "Reabrindo conex���o reabrindo!");
 			openConnection();
 		}
 	}
@@ -268,8 +268,12 @@ public abstract class BaseDAO<T extends EntitiePersistable> extends BaseDAORefle
 
 		return elementsList;
 	}
-
+	
 	public List<T> getAllElements(String selectQuery) throws AndroidDataBaseException  {
+		return getElements(selectQuery, null);
+	}
+
+	public List<T> getElements(String selectQuery, String[] selectionArgs) throws AndroidDataBaseException  {
 		throwExceptionIfIsAIncorretQuery(selectQuery);
 		boolean returnAllColumns = hasToReturnAllColumns(selectQuery);
 
@@ -277,7 +281,7 @@ public abstract class BaseDAO<T extends EntitiePersistable> extends BaseDAORefle
 		try {
 			reopenConnectionIfClose();
 
-			Cursor cursor = dataBase.rawQuery(selectQuery, null);
+			Cursor cursor = dataBase.rawQuery(selectQuery, selectionArgs);
 			try {
 
 				if (cursor.moveToFirst()) {

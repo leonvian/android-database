@@ -44,6 +44,17 @@ public class PessoaDAOTest extends AndroidTestCase {
 	    } 
 	}
 	
+	public void testRetrieveGetElements() {
+		deleteAllPeople();
+		saveAPerson();
+		PessoaDAO dao = PessoaDAO.getInstance(getContext());
+	
+		Pessoa pessoa = dao.getElements("select * from " + dao.getTableName() + " where nome = ?", new String[] {"Leonardo Viana"}).get(0);
+		assertNotNull(pessoa);
+		assertTrue(pessoa.getIdade() == IDADE_INICIAL);
+		assertTrue(pessoa.getNome().equals("Leonardo Viana"));
+	}
+	
 	public void testSavePerformance() {
 		deleteAllPeople(); 
 		saveToValidatePerformance();  
@@ -160,7 +171,7 @@ public class PessoaDAOTest extends AndroidTestCase {
 	private Pessoa createPessoa(String nome) {
 		HashMap<String, String> hashMapUm = new HashMap<String, String>();
 		hashMapUm.put("Carlos", "Gordinho");
-		hashMapUm.put("André", "Castro");
+		hashMapUm.put("Andr��", "Castro");
 		hashMapUm.put("Rafael", "Silveira");
 		Pessoa pessoa = new Pessoa("Leonardo Viana", hashMapUm);
 		byte[] photo = PHOTO_DATA_EXAMPLE;
