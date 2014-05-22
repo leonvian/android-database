@@ -390,7 +390,15 @@ public abstract class BaseDAO<T extends EntitiePersistable> extends BaseDAORefle
 		}
 
 	}
-	
+	/**
+	 * 
+	 * This method is prepared to a unique return for a query
+	 * This time you should just pass a Where part of a Query 
+	 * 
+	 * @param where - example: nome = 'Leonardo Viana
+	 * @return
+	 * @throws NoElementFoundException
+	 */
 	public T retrieveOneElementOrThrowException(String where) throws NoElementFoundException {
 		String myQuery = SELECT_ALL_FROM + " " + getTableName() + " WHERE " + where + " LIMIT 1";
 		List<T> elements = getAllElements(myQuery);
