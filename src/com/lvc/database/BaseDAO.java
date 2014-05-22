@@ -72,6 +72,9 @@ public abstract class BaseDAO<T extends EntitiePersistable> extends BaseDAORefle
 		String fieldPrimary = getPrimaryKeyField().getName();
 		Method method = getGetMethodByName(fieldPrimary);
 		Object objReturn = invokeMethod(entitie, method);
+		
+		if(objReturn == null)
+			throw new IllegalArgumentException("There is NO data at ID attribute " + fieldPrimary +   getEntitieClass() +  " Please verify if this object was persisted before!");
 
 		if(objReturn instanceof Integer) {
 			Integer primaryKeyValue = (Integer)objReturn;
