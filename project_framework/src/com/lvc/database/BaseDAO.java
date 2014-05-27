@@ -49,9 +49,10 @@ public abstract class BaseDAO<T extends EntitiePersistable> extends BaseDAORefle
 	public Context getContext() {
 		return context;
 	}
+	
 	/**
 	 * By default is null.
-	 * But this method should be overrided in case of save a data as String.
+	 * But this method should be override in case of save a data as String.
 	 */
 	@Override
 	public DataSerializer getDataSerializer() {
@@ -143,7 +144,7 @@ public abstract class BaseDAO<T extends EntitiePersistable> extends BaseDAORefle
 
 		} catch (ReflectionException e) {
 			e.printStackTrace();
-			throw new AndroidDataBaseException(e, "Falha ao salvar ou Alterar".concat("" + e.getMessage()));
+			throw new AndroidDataBaseException(e, "Fail to save or update ".concat(e.getMessage()));
 		}
 	}
 
@@ -443,10 +444,22 @@ public abstract class BaseDAO<T extends EntitiePersistable> extends BaseDAORefle
 	}
 
 	public int count() {
-		String countQuery = "SELECT  * FROM " + getTableName();
+		String countQuery = SELECT_ALL_FROM + getTableName();
 		return count(countQuery);
 	}
 
+	/**
+	 *
+	 * @param where - example: if you pass person = 1 - Will generate a query SELECT * FROM PERSON WHERE person = 1
+	 * @return
+	 */
+	public int countByQuery(String where) {
+		String countQuery = SELECT_ALL_FROM + getTableName() + " WHERE " + where;
+		int count = count(countQuery);
+		return count;
+	}
+	
+	@Deprecated
 	public int count(String countQuery) {
 		reopenConnectionIfClose();
 
