@@ -9,7 +9,6 @@ import android.util.Log;
 
 import com.example.databaseandroidprojectexample.OutraPessoa;
 import com.example.databaseandroidprojectexample.OutraPessoaDAO;
-import com.example.databaseandroidprojectexample.Pessoa;
 
 // Essa entidade vai ser recuperada totalmente com reflexão
 public class OutraPessoaDAOTest extends AndroidTestCase   {

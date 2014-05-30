@@ -20,7 +20,7 @@ public abstract class BaseDAOTest<T extends EntitiePersistable> extends BaseDAO<
 	
 	@Override
 	public DataSerializer getDataSerializer() {
-		return new DataSerializerImp();
+		return DataSerializerImp. getInstance();
 	}
 	
 }

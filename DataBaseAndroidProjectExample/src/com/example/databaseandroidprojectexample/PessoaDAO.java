@@ -1,12 +1,6 @@
 package com.example.databaseandroidprojectexample;
 
-import java.util.HashMap;
-
-import android.content.ContentValues;
 import android.content.Context;
-import android.database.Cursor;
-
-import com.lvc.database.ReflectionException;
 
 public class PessoaDAO extends BaseDAOTest<Pessoa> {
 
@@ -26,7 +20,7 @@ public class PessoaDAO extends BaseDAOTest<Pessoa> {
 	public Class<Pessoa> getEntitieClass() {
 		return Pessoa.class;
 	}
-
+/*
 	@Override
 	public ContentValues generateContentValues(Pessoa entitie, boolean ignorePrimaryKey) throws ReflectionException {
 		
@@ -68,5 +62,7 @@ public class PessoaDAO extends BaseDAOTest<Pessoa> {
 
 		return pessoa;
 	}
+	
+	*/
 
 }

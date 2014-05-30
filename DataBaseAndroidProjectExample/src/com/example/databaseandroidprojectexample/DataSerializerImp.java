@@ -1,19 +1,54 @@
 package com.example.databaseandroidprojectexample;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.lvc.database.util.DataSerializer;
 
 public class DataSerializerImp implements DataSerializer {
-
-	@Override
-	public String toJson(Object content) {
-		return null;//br.com.lvc.utility.connection.DataSerializer.getInstance().toJson(content);
+	
+	public static final String DEFAULT_FORMAT_DATE = "yyyy-MM-dd HH:mm a z";
+	
+	private ObjectMapper objectMapper = null;
+	private static DataSerializerImp  instance;
+	
+	
+	public  static DataSerializerImp getInstance() {
+		if(instance == null)
+			instance = new DataSerializerImp();
+		return instance;
 	}
 
-	@Override
-	public <T> T toObject(String json, Class<T> targetClass) {
-		return null;//br.com.lvc.utility.connection.DataSerializer.getInstance().toObject(json, targetClass);
-	}
 
+	public DataSerializerImp() {
+		objectMapper = new ObjectMapper();
+		objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+		objectMapper.setSerializationInclusion(Include.NON_NULL);  
+		
+		DateFormat df = new SimpleDateFormat(DEFAULT_FORMAT_DATE);
+		objectMapper.setDateFormat(df);
+	} 
+  
+ 
+
+	public String toJson(Object content)   {
+		try {
+			return objectMapper.writeValueAsString(content);	
+		} catch(Exception e) {
+			throw new RuntimeException(e);
+		}
+	}
+ 
+	public Object toObject(String json, Class targetClass)  {
+		try {
+			return  objectMapper.readValue(json, targetClass);	
+		} catch(Exception e) {
+			throw new RuntimeException(e);
+		}
+	}
 	 
 
 }

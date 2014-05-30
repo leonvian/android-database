@@ -5,7 +5,6 @@ import java.util.HashMap;
 import com.lvc.database.EntitiePersistable;
 import com.lvc.database.annotation.PrimaryKey;
 import com.lvc.database.annotation.SaveAsBytes;
-import com.lvc.database.annotation.SaveAsString;
 
 public class Pessoa implements EntitiePersistable {
 
@@ -17,7 +16,8 @@ public class Pessoa implements EntitiePersistable {
 	
 	@SaveAsBytes
 	private HashMap<String, String> hashMapUm;
-	@SaveAsString
+	
+	@SaveAsBytes
 	private HashMap<String, String> hashMapDois;
 	private byte[] photo;
 	private byte idade;
@@ -25,6 +25,19 @@ public class Pessoa implements EntitiePersistable {
 
 	public Pessoa() {
 	}
+
+	
+
+	public Pessoa(String nome, HashMap<String, String> hashMapUm, HashMap<String, String> hashMapDois, byte[] photo, byte idade, boolean heterosexual) {
+		super();
+		this.nome = nome;
+		this.hashMapUm = hashMapUm;
+		this.hashMapDois = hashMapDois;
+		this.photo = photo;
+		this.idade = idade;
+		this.heterosexual = heterosexual;
+	}
+
 
 
 	public Pessoa(String nome, HashMap<String, String> hashMapUm) {

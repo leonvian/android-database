@@ -11,7 +11,6 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
-import android.util.Log;
 
 import com.example.databaseandroidproject.R;
 import com.lvc.database.annotation.TableName;
@@ -20,11 +19,12 @@ import com.lvc.database.util.DataSerializer;
 public abstract class BaseDAO<T extends EntitiePersistable> extends BaseDAOReflection<T> {
 
 	private static final String SELECT_ALL_FROM = "SELECT  * FROM ";
+	private static final String WHERE = " WHERE ";
 	private static final String SELECT = "SELECT";
 	private static final String FROM = "FROM"; 
 	private static final String RETURN_ALL_SYMBOL = "*";
 	private static final String COMMA = ","; 
-	
+
 	protected SQLiteDatabase dataBase;
 	private Context context;
 
@@ -41,7 +41,6 @@ public abstract class BaseDAO<T extends EntitiePersistable> extends BaseDAORefle
 
 	public void reopenConnectionIfClose() {
 		if(dataBase == null || !dataBase.isOpen()) {
-			Log.e("SQLITE", "Reabrindo conex���o reabrindo!");
 			openConnection();
 		}
 	}
@@ -49,10 +48,10 @@ public abstract class BaseDAO<T extends EntitiePersistable> extends BaseDAORefle
 	public Context getContext() {
 		return context;
 	}
-	
+
 	/**
 	 * By default is null.
-	 * But this method should be override in case of save a data as String.
+	 * But this method should be override in case of save a data as String. SaveAsString
 	 */
 	@Override
 	public DataSerializer getDataSerializer() {
@@ -65,12 +64,12 @@ public abstract class BaseDAO<T extends EntitiePersistable> extends BaseDAORefle
 		Field fieldPrimary = getPrimaryKeyField();
 		return getColumnNameByField(fieldPrimary); 
 	}
- 
+
 	private long getPrimaryKeyValue(T entitie) throws AndroidDataBaseException, ReflectionException {
 		String fieldPrimary = getPrimaryKeyField().getName();
 		Method method = getGetMethodByName(fieldPrimary);
 		Object objReturn = invokeMethod(entitie, method);
-		
+
 		if(objReturn == null)
 			throw new IllegalArgumentException("There is NO data at ID attribute " + fieldPrimary +   getEntitieClass() +  " Please verify if this object was persisted before!");
 
@@ -81,14 +80,14 @@ public abstract class BaseDAO<T extends EntitiePersistable> extends BaseDAORefle
 			return (Long)objReturn;	
 		} 
 	}
-	
+
 	private void setPrimaryKeyValue(T entitie, Long value) throws AndroidDataBaseException, ReflectionException { 
 		Field primaryKeyField = getPrimaryKeyField();
 		String fieldPrimary = primaryKeyField.getName();
 		Method method = getSetMethodByName(fieldPrimary);
-		
+
 		FieldType type = TypeFinder.getFieldTypeWithoutAnnotationVerification(primaryKeyField);
-		
+
 		if(type == FieldType.INTEGER || type == FieldType.INTEGER_PRIMITIVE) {
 			int valueInt = value.intValue();
 			invokeMethodWithParameter(entitie, method, valueInt);
@@ -97,8 +96,8 @@ public abstract class BaseDAO<T extends EntitiePersistable> extends BaseDAORefle
 		} else {
 			return;
 		}
-		
-		 
+
+
 	}
 
 	public String getTableName() {
@@ -205,7 +204,7 @@ public abstract class BaseDAO<T extends EntitiePersistable> extends BaseDAORefle
 
 			reopenConnectionIfClose();
 
-			String selectQuery = "SELECT  * FROM " + getTableName() + " WHERE " + getIdColumnName() + "= " + id;
+			String selectQuery = SELECT_ALL_FROM + getTableName() + " WHERE " + getIdColumnName() + "= " + id;
 			Cursor cursor = dataBase.rawQuery(selectQuery, null);
 
 			try {
@@ -270,8 +269,59 @@ public abstract class BaseDAO<T extends EntitiePersistable> extends BaseDAORefle
 		return elementsList;
 	}
 	
+	public List<T> getElements(String where, String[] whereArgs, String orderBy, int limit) throws AndroidDataBaseException  {
+		List<T> elements = getElements(false, null, where, whereArgs, null, null, orderBy, limit);
+		return elements;
+	}
+
+	public List<T> getElements(boolean distinct,String[] columns, String where, String[] whereArgs, String groupBy, String having, String orderBy, int limit) throws AndroidDataBaseException  {
+
+		try {
+			reopenConnectionIfClose();
+
+			Cursor cursor = dataBase.query(distinct, getTableName(), columns, where, whereArgs, groupBy, having, orderBy, String.valueOf(limit), null);
+			List<T> elementsList = cursorToElements(cursor);
+			return elementsList;
+
+		} catch(Exception e) {
+			e.printStackTrace();
+			String message = getContext().getString(R.string.falha_recuperar).concat(""+e.getMessage());
+			throw new AndroidDataBaseException(e, message);
+		} 
+
+
+	}
+
+	protected List<T> cursorToElements(Cursor cursor) throws InstantiationException, IllegalAccessException, ReflectionException {
+		List<T> elementsList = new ArrayList<T>(); 
+		try {
+			if (cursor.moveToFirst()) {
+				do {
+					T entitie = cursorToEntitie(cursor);
+					elementsList.add(entitie);
+				} while (cursor.moveToNext());
+			}
+		} finally {
+			if(!cursor.isClosed())
+				cursor.close();	
+		}
+		return elementsList;
+	}
+
+	public List<T> getElementsByWhereClause(String where, String[] selectionArgs) throws AndroidDataBaseException  {
+		String query = SELECT_ALL_FROM + getTableName() + WHERE + where;
+		List<T> elementsList = 	getElements(query, selectionArgs);
+		return elementsList;
+	}
+
+	public List<T> getElementsByWhereClause(String where) throws AndroidDataBaseException  {
+		List<T> elementsList = 	getElementsByWhereClause(where, null);
+		return elementsList;
+	}
+
 	public List<T> getAllElements(String selectQuery) throws AndroidDataBaseException  {
-		return getElements(selectQuery, null);
+		List<T> elementsList = getElements(selectQuery, null);  
+		return elementsList;
 	}
 
 	public List<T> getElements(String selectQuery, String[] selectionArgs) throws AndroidDataBaseException  {
@@ -373,6 +423,8 @@ public abstract class BaseDAO<T extends EntitiePersistable> extends BaseDAORefle
 			throw new AndroidDataBaseException("This column " + selectColumn+ " doesn't was found in " + getTableName());
 	}
 
+
+
 	private String getSelectColumnsString(String query) {
 		query = query.toUpperCase();
 		int indexSelect = query.indexOf(SELECT) + SELECT.length();
@@ -437,11 +489,23 @@ public abstract class BaseDAO<T extends EntitiePersistable> extends BaseDAORefle
 		String deleteQuery = "DELETE FROM " + getTableName();
 		dataBase.execSQL(deleteQuery);
 	}
-	
+
 	public void deleteByQuery(String deleteQuery) {
 		reopenConnectionIfClose();
 		dataBase.execSQL(deleteQuery);
 	}
+
+	public void deleteByQueryPassingWhere(String whereClause) {
+		String deleteQuery = "DELETE FROM " + getTableName() + " WHERE " + whereClause;
+		reopenConnectionIfClose();
+		dataBase.execSQL(deleteQuery);
+	}
+
+	public void deleteByQueryPassingWhere(String whereClause, String[] whereArgs) {
+		reopenConnectionIfClose();
+		dataBase.delete(getTableName(), whereClause, whereArgs);
+	}
+
 
 	public int count() {
 		String countQuery = SELECT_ALL_FROM + getTableName();
@@ -458,17 +522,17 @@ public abstract class BaseDAO<T extends EntitiePersistable> extends BaseDAORefle
 		int count = count(countQuery);
 		return count;
 	}
-	
-	@Deprecated
+
 	public int count(String countQuery) {
 		reopenConnectionIfClose();
 
 		int count = 0;
 
 		Cursor cursor = null;
-		try {
+		try { 
 			cursor = dataBase.rawQuery(countQuery, null);
-			count = cursor.getCount();	
+			count = cursor.getCount();
+
 		} finally {
 			closeCursor(cursor);
 		}
