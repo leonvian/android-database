@@ -19,6 +19,8 @@ public class OutraPessoaDAOTest extends AndroidTestCase   {
 	private static final byte IDADE_EDITED = 22;
 	
 	
+	
+	
 	public void testSavePerformance() {
 		deleteAllPeople(); 
 		saveToValidatePerformance();  

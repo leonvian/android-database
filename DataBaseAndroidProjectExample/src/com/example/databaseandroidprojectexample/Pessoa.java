@@ -1,5 +1,6 @@
 package com.example.databaseandroidprojectexample;
 
+import java.util.Date;
 import java.util.HashMap;
 
 import com.lvc.database.EntitiePersistable;
@@ -22,6 +23,7 @@ public class Pessoa implements EntitiePersistable {
 	private byte[] photo;
 	private byte idade;
 	private boolean heterosexual;  
+	private Date dataNascimento;
 
 	public Pessoa() {
 	}
@@ -46,6 +48,14 @@ public class Pessoa implements EntitiePersistable {
 		this.hashMapUm = hashMapUm;
 	}
 	
+	
+	public Date getDataNascimento() {
+		return dataNascimento;
+	}
+	
+	public void setDataNascimento(Date dataNascimento) {
+		this.dataNascimento = dataNascimento;
+	}
 	
 	public HashMap<String, String> getHashMapDois() {
 		return hashMapDois;

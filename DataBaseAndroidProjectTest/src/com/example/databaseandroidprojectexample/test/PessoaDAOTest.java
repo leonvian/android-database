@@ -1,6 +1,10 @@
 package com.example.databaseandroidprojectexample.test;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 
@@ -13,6 +17,7 @@ import com.lvc.database.NoElementFoundException;
 
 public class PessoaDAOTest extends AndroidTestCase {
 
+	public static final String FORMAT_DATE = "yyyy-MM-dd HH:mm:ss";
 	private static final String EDITED = "EDITADED";
 	private static final byte[] PHOTO_DATA_EXAMPLE = {1,2,3,4,5,6,7,8};
 	private static final byte IDADE_INICIAL = 12;
@@ -30,6 +35,49 @@ public class PessoaDAOTest extends AndroidTestCase {
 	Pessoa pessoaMenorIdadeDois = new Pessoa("Marcus", createHashMap(), createHashMap(), photo, IDADE_MENOR_2, true);
 	Pessoa pessoaMaior = new Pessoa("Calixto", createHashMap(), createHashMap(), photo, IDADE_MAIOR, true);
 
+	
+	
+	public void testInsert() {
+		deleteAllPeople();
+		
+		PessoaDAO.getInstance(getContext()).insert(pessoaUm);
+		assertEquals(1, PessoaDAO.getInstance(getContext()).count());
+		PessoaDAO.getInstance(getContext()).insert(pessoaUm);
+		assertEquals(2, PessoaDAO.getInstance(getContext()).count());
+	}
+	
+	public void testSaveOrUpdate() {
+		deleteAllPeople();
+		
+		PessoaDAO.getInstance(getContext()).saveOrUpdade(pessoaUm);
+		assertEquals(1, PessoaDAO.getInstance(getContext()).count());
+		PessoaDAO.getInstance(getContext()).saveOrUpdade(pessoaUm);
+		assertEquals(1, PessoaDAO.getInstance(getContext()).count());
+	}
+	
+	public void testSaveAndRetreiveDate() {
+		
+		PessoaDAO.getInstance(getContext()).deleteAll();
+		
+		Pessoa pessoaUm = new Pessoa("Marcus", createHashMap(), createHashMap(), photo, IDADE_INICIAL, true);
+		Calendar calendar = Calendar.getInstance();
+		calendar.set(1990, 02, 01, 12, 00);
+		Date dataNascimento = calendar.getTime();
+		pessoaUm.setDataNascimento(dataNascimento);
+		
+		PessoaDAO.getInstance(getContext()).save(pessoaUm);
+		
+		assertTrue(PessoaDAO.getInstance(getContext()).count() == 1);
+		
+		Pessoa pessoaRecuperada = PessoaDAO.getInstance(getContext()).getAllElements().get(0);
+		
+		assertEquals(toDateTime(pessoaUm.getDataNascimento()),toDateTime(pessoaRecuperada.getDataNascimento()));
+		
+		//WHERE my_date >= #2008-09-01 00:00:00#  AND my_date < #2010-09-01 00:00:00#;
+		assertEquals(0,PessoaDAO.getInstance(getContext()).getElementsByWhereClause("dataNascimento > '2008-09-01 00:00:00'").size());
+		assertEquals(1,PessoaDAO.getInstance(getContext()).getElementsByWhereClause("dataNascimento > '1980-09-01 00:00:00'").size());
+		
+	}
 	
 	
 	public void testDeleteByQueryPassingWhere() {
@@ -301,6 +349,27 @@ public class PessoaDAOTest extends AndroidTestCase {
 		pessoas.add(createPessoa("Carlinhos"));
 
 		return pessoas;
+	}
+	
+	private String toDateTime(Date data) {
+		SimpleDateFormat dateFormat = new SimpleDateFormat(FORMAT_DATE); 
+		String dateTime = dateFormat.format(data);
+
+		return dateTime;
+	}
+
+	private Date toDateTime(String data) {
+		if(data == null)
+			return null;
+		try {
+			SimpleDateFormat dateFormat = new SimpleDateFormat(FORMAT_DATE); 
+			Date dateTime = dateFormat.parse(data);
+
+			return dateTime;	
+		} catch(ParseException e) {
+			e.printStackTrace();
+			return null;
+		} 
 	}
 
 }

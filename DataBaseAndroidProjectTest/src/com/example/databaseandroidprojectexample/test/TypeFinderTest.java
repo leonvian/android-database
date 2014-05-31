@@ -31,6 +31,7 @@ public class TypeFinderTest extends AndroidTestCase {
 				FieldType.BYTE_ARRAY,
 				FieldType.INTEGER,
 				FieldType.BYTE,
+				FieldType.DATE,
 				FieldType.BOOlEAN_PRIMITIVE,
 		};
 		

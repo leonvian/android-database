@@ -477,9 +477,9 @@ public abstract class BaseDAOReflection<T extends EntitiePersistable> {
 		} catch(ParseException e) {
 			e.printStackTrace();
 			return null;
-		}
-
+		} 
 	}
+	
 
 	public Object invokeMethod(T entitie, Method method) throws ReflectionException {
 		try {

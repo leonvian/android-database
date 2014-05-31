@@ -66,8 +66,11 @@ public class TableUtils {
 					break;
 
 				case STRING:
-				case DATE:
 					stringBuilder.append(" TEXT");
+					break;
+					
+				case DATE:
+					stringBuilder.append(" DATETIME");
 					break;
 
 				case BOOLEAN:

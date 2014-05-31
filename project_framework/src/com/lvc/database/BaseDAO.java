@@ -19,6 +19,7 @@ import com.lvc.database.util.DataSerializer;
 public abstract class BaseDAO<T extends EntitiePersistable> extends BaseDAOReflection<T> {
 
 	private static final String SELECT_ALL_FROM = "SELECT  * FROM ";
+	private static final String DELETE_FROM = "DELETE FROM ";
 	private static final String WHERE = " WHERE ";
 	private static final String SELECT = "SELECT";
 	private static final String FROM = "FROM"; 
@@ -65,13 +66,15 @@ public abstract class BaseDAO<T extends EntitiePersistable> extends BaseDAORefle
 		return getColumnNameByField(fieldPrimary); 
 	}
 
-	private long getPrimaryKeyValue(T entitie) throws AndroidDataBaseException, ReflectionException {
+	
+	
+	private Long getPrimaryKeyValueOrReturnNull(T entitie) throws AndroidDataBaseException, ReflectionException {
 		String fieldPrimary = getPrimaryKeyField().getName();
 		Method method = getGetMethodByName(fieldPrimary);
 		Object objReturn = invokeMethod(entitie, method);
 
 		if(objReturn == null)
-			throw new IllegalArgumentException("There is NO data at ID attribute " + fieldPrimary +   getEntitieClass() +  " Please verify if this object was persisted before!");
+			return null;
 
 		if(objReturn instanceof Integer) {
 			Integer primaryKeyValue = (Integer)objReturn;
@@ -111,7 +114,27 @@ public abstract class BaseDAO<T extends EntitiePersistable> extends BaseDAORefle
 
 	}
 
+	/**
+	 * This method just will call saveOrUpdate method.
+	 * If you want a method to insert any data without Primary Key validation use insert method.
+	 * 
+	 * @param entitie 
+	 * @return
+	 * @throws AndroidDataBaseException
+	 */
 	public long save(T entitie) throws AndroidDataBaseException {
+		return saveOrUpdade(entitie);
+	}
+	
+	
+	/**
+	 * This method will insert a item at Database.
+	 * 
+	 * @param entitie 
+	 * @return
+	 * @throws AndroidDataBaseException
+	 */
+	public long insert(T entitie) throws AndroidDataBaseException {
 		try {
 
 			reopenConnectionIfClose();
@@ -128,32 +151,44 @@ public abstract class BaseDAO<T extends EntitiePersistable> extends BaseDAORefle
 		}
 	}
 
-	public void saveOrUpdade(T entitie) throws AndroidDataBaseException {
+	/**
+	 * This method will try to save a Entitie or Update if it already exist at database.
+	 * @param entitie 
+	 * @return
+	 * @throws AndroidDataBaseException
+	 */
+	public long saveOrUpdade(T entitie) throws AndroidDataBaseException {
+		long result = 0;
 		try {
 
 			reopenConnectionIfClose();
 
-			Long id = getPrimaryKeyValue(entitie);
+			Long id = getPrimaryKeyValueOrReturnNull(entitie);
 
 			if(id == null || id == 0) 
-				save(entitie);
+				result = insert(entitie);
 			else 
-				saveOrUpdateIfExist(entitie, id);
+				result = saveOrUpdateIfExist(entitie, id);
 
 
 		} catch (ReflectionException e) {
 			e.printStackTrace();
 			throw new AndroidDataBaseException(e, "Fail to save or update ".concat(e.getMessage()));
 		}
+		
+		return result;
 	}
 
-	private void saveOrUpdateIfExist(T entitie, long id) throws AndroidDataBaseException {
+	private long saveOrUpdateIfExist(T entitie, long id) throws AndroidDataBaseException {
+		long result = 0;
 		T entitieToEdit = getEntitieByID(id);
 		if(entitieToEdit != null) { // tem registro com esse ID
-			update(entitie);
+			result = update(entitie);
 		} else {
-			save(entitie);
+			result = insert(entitie);
 		}
+		
+		return result;
 	}
 
 	public long saveAll(Collection<T> elements) throws AndroidDataBaseException {
@@ -165,7 +200,7 @@ public abstract class BaseDAO<T extends EntitiePersistable> extends BaseDAORefle
 
 		try {
 			for(T entitie : elements) {
-				result = save(entitie);
+				result = insert(entitie);
 				if(result == -1) 
 					return result;
 			}
@@ -177,6 +212,8 @@ public abstract class BaseDAO<T extends EntitiePersistable> extends BaseDAORefle
 
 		return result;
 	}
+	
+	
 
 	public long saveOrUpdadeAll(Collection<T> elements) throws AndroidDataBaseException {
 		long result = 0;
@@ -471,7 +508,10 @@ public abstract class BaseDAO<T extends EntitiePersistable> extends BaseDAORefle
 
 			reopenConnectionIfClose();
 			ContentValues values = generateContentValues(entitie,false);
-			Long id = getPrimaryKeyValue(entitie);
+			Long id = getPrimaryKeyValueOrReturnNull(entitie);
+			if(id == null)
+				throw new IllegalArgumentException("There is NO ID - Primary Key at " + getEntitieClass() +  " Please verify if this object was persisted before you update!");
+			
 			return dataBase.update(getTableName(), values, getIdColumnName() + " = ?", new String[] { String.valueOf(id) });
 
 		} catch(Exception e) {
@@ -486,7 +526,7 @@ public abstract class BaseDAO<T extends EntitiePersistable> extends BaseDAORefle
 
 		reopenConnectionIfClose();
 
-		String deleteQuery = "DELETE FROM " + getTableName();
+		String deleteQuery = DELETE_FROM + getTableName();
 		dataBase.execSQL(deleteQuery);
 	}
 
@@ -496,7 +536,7 @@ public abstract class BaseDAO<T extends EntitiePersistable> extends BaseDAORefle
 	}
 
 	public void deleteByQueryPassingWhere(String whereClause) {
-		String deleteQuery = "DELETE FROM " + getTableName() + " WHERE " + whereClause;
+		String deleteQuery = DELETE_FROM + getTableName() + WHERE + whereClause;
 		reopenConnectionIfClose();
 		dataBase.execSQL(deleteQuery);
 	}
@@ -545,7 +585,10 @@ public abstract class BaseDAO<T extends EntitiePersistable> extends BaseDAORefle
 		reopenConnectionIfClose();
 
 		try {
-			Long id = getPrimaryKeyValue(entitie);
+			Long id = getPrimaryKeyValueOrReturnNull(entitie);
+			if(id == null)
+				throw new IllegalArgumentException("There is NO data at ID - Primary key at " + getEntitieClass() +  " Please verify if this object was persisted before you try to delete!");
+			
 			dataBase.delete(getTableName(), getIdColumnName() + " = ?",	new String[] { String.valueOf(id) });
 		} catch(Exception e) {
 			e.printStackTrace();
