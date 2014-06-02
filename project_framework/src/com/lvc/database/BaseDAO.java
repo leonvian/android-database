@@ -316,7 +316,7 @@ public abstract class BaseDAO<T extends EntitiePersistable> extends BaseDAORefle
 		try {
 			reopenConnectionIfClose();
 
-			Cursor cursor = dataBase.query(distinct, getTableName(), columns, where, whereArgs, groupBy, having, orderBy, String.valueOf(limit), null);
+			Cursor cursor = dataBase.query(distinct, getTableName(), columns, where, whereArgs, groupBy, having, orderBy, String.valueOf(limit));
 			List<T> elementsList = cursorToElements(cursor);
 			return elementsList;
 
@@ -325,8 +325,6 @@ public abstract class BaseDAO<T extends EntitiePersistable> extends BaseDAORefle
 			String message = getContext().getString(R.string.falha_recuperar).concat(""+e.getMessage());
 			throw new AndroidDataBaseException(e, message);
 		} 
-
-
 	}
 
 	protected List<T> cursorToElements(Cursor cursor) throws InstantiationException, IllegalAccessException, ReflectionException {

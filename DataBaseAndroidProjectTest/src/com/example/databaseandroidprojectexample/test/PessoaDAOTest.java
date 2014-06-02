@@ -169,6 +169,10 @@ public class PessoaDAOTest extends AndroidTestCase {
 		saveToValidatePerformance();
 
 		assertEquals(TestConfiguration.NUMBER_REPETITION, PessoaDAO.getInstance(getContext()).count());
+		
+		PessoaDAO.getInstance(getContext()).deleteAll();
+		
+		assertEquals(0, PessoaDAO.getInstance(getContext()).count());
 	}
 
 	public void testSaveIds() {
