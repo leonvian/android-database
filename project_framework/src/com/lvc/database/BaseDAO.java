@@ -66,8 +66,6 @@ public abstract class BaseDAO<T extends EntitiePersistable> extends BaseDAORefle
 		return getColumnNameByField(fieldPrimary); 
 	}
 
-	
-	
 	private Long getPrimaryKeyValueOrReturnNull(T entitie) throws AndroidDataBaseException, ReflectionException {
 		String fieldPrimary = getPrimaryKeyField().getName();
 		Method method = getGetMethodByName(fieldPrimary);
@@ -213,8 +211,6 @@ public abstract class BaseDAO<T extends EntitiePersistable> extends BaseDAORefle
 		return result;
 	}
 	
-	
-
 	public long saveOrUpdadeAll(Collection<T> elements) throws AndroidDataBaseException {
 		long result = 0;
 
@@ -305,19 +301,37 @@ public abstract class BaseDAO<T extends EntitiePersistable> extends BaseDAORefle
 
 		return elementsList;
 	}
-	
-	public List<T> getElements(String where, String[] whereArgs, String orderBy, int limit) throws AndroidDataBaseException  {
-		List<T> elements = getElements(false, null, where, whereArgs, null, null, orderBy, limit);
-		return elements;
-	}
 
-	public List<T> getElements(boolean distinct,String[] columns, String where, String[] whereArgs, String groupBy, String having, String orderBy, int limit) throws AndroidDataBaseException  {
-
+	public List<T> getElements(String where, String[] whereArgs, boolean distinct, String[] columns, String groupBy, String having, String orderBy, String limit) throws AndroidDataBaseException  {
+		
+		boolean returnAllColumns = hasToReturnAllColumns(columns);
+		List<T> elementsList = new ArrayList<T>(); 
+		
 		try {
 			reopenConnectionIfClose();
+			Cursor cursor = dataBase.query(distinct, getTableName(), columns, where, whereArgs, groupBy, having, orderBy, limit);
+			try {
 
-			Cursor cursor = dataBase.query(distinct, getTableName(), columns, where, whereArgs, groupBy, having, orderBy, String.valueOf(limit));
-			List<T> elementsList = cursorToElements(cursor);
+				if (cursor.moveToFirst()) {
+					do {
+						T entitie = null;
+
+						if(returnAllColumns) {
+							entitie = cursorToEntitie(cursor);
+						} else {
+							List<Field> selectedFields = getFieldsByColumnName(columns);
+							entitie = cursorToEntitie(cursor, selectedFields);
+						}
+
+						elementsList.add(entitie);
+					} while (cursor.moveToNext());
+				}
+
+			} finally {
+				if(!cursor.isClosed())
+					cursor.close();	
+			}
+			
 			return elementsList;
 
 		} catch(Exception e) {
@@ -326,40 +340,18 @@ public abstract class BaseDAO<T extends EntitiePersistable> extends BaseDAORefle
 			throw new AndroidDataBaseException(e, message);
 		} 
 	}
-
-	protected List<T> cursorToElements(Cursor cursor) throws InstantiationException, IllegalAccessException, ReflectionException {
-		List<T> elementsList = new ArrayList<T>(); 
-		try {
-			if (cursor.moveToFirst()) {
-				do {
-					T entitie = cursorToEntitie(cursor);
-					elementsList.add(entitie);
-				} while (cursor.moveToNext());
-			}
-		} finally {
-			if(!cursor.isClosed())
-				cursor.close();	
-		}
-		return elementsList;
+	
+	public List<T> getElements(String where, String[] whereArgs, String orderBy, String limit) throws AndroidDataBaseException  {
+		List<T> elements = getElements(where, whereArgs, false, null, null, null, orderBy, limit);
+		return elements;
 	}
-
-	public List<T> getElementsByWhereClause(String where, String[] selectionArgs) throws AndroidDataBaseException  {
-		String query = SELECT_ALL_FROM + getTableName() + WHERE + where;
-		List<T> elementsList = 	getElements(query, selectionArgs);
-		return elementsList;
+	
+	public List<T> getElements(String where, String[] whereArgs) throws AndroidDataBaseException  {
+		List<T> elements = getElements(where, whereArgs, false, null, null, null, null, null);
+		return elements;
 	}
-
-	public List<T> getElementsByWhereClause(String where) throws AndroidDataBaseException  {
-		List<T> elementsList = 	getElementsByWhereClause(where, null);
-		return elementsList;
-	}
-
-	public List<T> getAllElements(String selectQuery) throws AndroidDataBaseException  {
-		List<T> elementsList = getElements(selectQuery, null);  
-		return elementsList;
-	}
-
-	public List<T> getElements(String selectQuery, String[] selectionArgs) throws AndroidDataBaseException  {
+	
+	public List<T> getElementsRawQuery(String selectQuery, String[] selectionArgs) throws AndroidDataBaseException  {
 		throwExceptionIfIsAIncorretQuery(selectQuery);
 		boolean returnAllColumns = hasToReturnAllColumns(selectQuery);
 
@@ -400,6 +392,49 @@ public abstract class BaseDAO<T extends EntitiePersistable> extends BaseDAORefle
 		return elementsList;
 	}
 
+	protected List<T> cursorToElements(Cursor cursor) throws InstantiationException, IllegalAccessException, ReflectionException {
+		List<T> elementsList = new ArrayList<T>(); 
+		
+		try {
+			if (cursor.moveToFirst()) {
+				do {
+					T entitie = cursorToEntitie(cursor);
+					elementsList.add(entitie);
+				} while (cursor.moveToNext());
+			}
+		} finally {
+			if(!cursor.isClosed())
+				cursor.close();	
+		}
+		return elementsList;
+	}
+
+	public List<T> getElementsByWhereClause(String where, String[] selectionArgs) throws AndroidDataBaseException  {
+		String query = SELECT_ALL_FROM + getTableName() + WHERE + where;
+		List<T> elementsList = getElementsRawQuery(query, selectionArgs);
+		return elementsList;
+	}
+
+	public List<T> getElementsByWhereClause(String where) throws AndroidDataBaseException  {
+		List<T> elementsList = getElementsByWhereClause(where, null);
+		return elementsList;
+	}
+
+	public List<T> getAllElements(String selectQuery) throws AndroidDataBaseException  {
+		List<T> elementsList = getElementsRawQuery(selectQuery, null);  
+		return elementsList;
+	}
+	
+	private boolean hasToReturnAllColumns(String[] columns) {
+		boolean result = false;
+		
+		if (columns == null || columns.length == 0) {
+			result = true;
+		}
+		
+		return result; 
+	}
+	
 	private boolean hasToReturnAllColumns(String query) {
 
 		String selectColumns = getSelectColumnsString(query);

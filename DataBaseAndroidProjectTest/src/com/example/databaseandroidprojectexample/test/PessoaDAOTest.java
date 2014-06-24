@@ -115,7 +115,7 @@ public class PessoaDAOTest extends AndroidTestCase {
 				"Marcus"
 		};
 		
-		List<Pessoa> pessoas = PessoaDAO.getInstance(getContext()).getElements("nome = ?", whereArgs, "idade", 1);
+		List<Pessoa> pessoas = PessoaDAO.getInstance(getContext()).getElements("nome = ?", whereArgs, "idade", "1");
 				
 		assertEquals(pessoas.size(), 1);
 		Pessoa pessoaRetrieved = pessoas.get(0);
@@ -200,12 +200,24 @@ public class PessoaDAOTest extends AndroidTestCase {
 		} 
 	}
 
+	public void testRetrieveGetElementsRawQuery() {
+		deleteAllPeople();
+		saveAPerson();
+		PessoaDAO dao = PessoaDAO.getInstance(getContext());
+
+		Pessoa pessoa = dao.getElementsRawQuery("select * from " + dao.getTableName() + " where nome = ?", new String[] {"Leonardo Viana"}).get(0);
+		assertNotNull(pessoa);
+		assertTrue(pessoa.getIdade() == IDADE_INICIAL);
+		assertTrue(pessoa.getNome().equals("Leonardo Viana"));
+	}
+	
 	public void testRetrieveGetElements() {
 		deleteAllPeople();
 		saveAPerson();
 		PessoaDAO dao = PessoaDAO.getInstance(getContext());
 
-		Pessoa pessoa = dao.getElements("select * from " + dao.getTableName() + " where nome = ?", new String[] {"Leonardo Viana"}).get(0);
+		Pessoa pessoa = dao.getElements("nome = ?", new String[] {"Leonardo Viana"}).get(0);
+		
 		assertNotNull(pessoa);
 		assertTrue(pessoa.getIdade() == IDADE_INICIAL);
 		assertTrue(pessoa.getNome().equals("Leonardo Viana"));
