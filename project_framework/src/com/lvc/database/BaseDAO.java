@@ -351,6 +351,11 @@ public abstract class BaseDAO<T extends EntitiePersistable> extends BaseDAORefle
 		return elements;
 	}
 	
+	public List<T> getElements(String where, String[] whereArgs, String orderBy) throws AndroidDataBaseException  {
+		List<T> elements = getElements(where, whereArgs, false, null, null, null, orderBy, null);
+		return elements;
+	}
+	
 	public List<T> getElementsRawQuery(String selectQuery, String[] selectionArgs) throws AndroidDataBaseException  {
 		throwExceptionIfIsAIncorretQuery(selectQuery);
 		boolean returnAllColumns = hasToReturnAllColumns(selectQuery);
@@ -514,7 +519,6 @@ public abstract class BaseDAO<T extends EntitiePersistable> extends BaseDAORefle
 		} else if(!query.contains(FROM)) {
 			throw new AndroidDataBaseException("Your string query has to have FROM " + query);
 		}
-
 	}
 	/**
 	 * 
@@ -563,47 +567,32 @@ public abstract class BaseDAO<T extends EntitiePersistable> extends BaseDAORefle
 		dataBase.execSQL(deleteQuery);
 	}
 
-	public void deleteByQuery(String deleteQuery) {
-		reopenConnectionIfClose();
-		dataBase.execSQL(deleteQuery);
+	public void delete(String whereClause) {
+		delete(whereClause, null);
 	}
 
-	public void deleteByQueryPassingWhere(String whereClause) {
-		String deleteQuery = DELETE_FROM + getTableName() + WHERE + whereClause;
-		reopenConnectionIfClose();
-		dataBase.execSQL(deleteQuery);
-	}
-
-	public void deleteByQueryPassingWhere(String whereClause, String[] whereArgs) {
+	public void delete(String whereClause, String[] whereArgs) {
 		reopenConnectionIfClose();
 		dataBase.delete(getTableName(), whereClause, whereArgs);
 	}
 
-
 	public int count() {
-		String countQuery = SELECT_ALL_FROM + getTableName();
-		return count(countQuery);
+		return count(null, null);
 	}
 
-	/**
-	 *
-	 * @param where - example: if you pass person = 1 - Will generate a query SELECT * FROM PERSON WHERE person = 1
-	 * @return
-	 */
-	public int countByQuery(String where) {
-		String countQuery = SELECT_ALL_FROM + getTableName() + " WHERE " + where;
-		int count = count(countQuery);
-		return count;
-	}
-
-	public int count(String countQuery) {
+	public int count(String where, String[] selectionArgs) {
 		reopenConnectionIfClose();
-
+		
 		int count = 0;
-
+		String countWhere = SELECT_ALL_FROM + getTableName();
+		
+		if (where != null) {
+			countWhere = countWhere.concat(" WHERE ".concat(where));
+		}
+	
 		Cursor cursor = null;
 		try { 
-			cursor = dataBase.rawQuery(countQuery, null);
+			cursor = dataBase.rawQuery(countWhere, selectionArgs);
 			count = cursor.getCount();
 
 		} finally {

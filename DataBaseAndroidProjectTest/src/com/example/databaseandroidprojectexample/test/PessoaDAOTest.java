@@ -84,7 +84,7 @@ public class PessoaDAOTest extends AndroidTestCase {
 		deleteAllPeople();		
 		saveMarcusAndCalixto();
 		assertTrue(PessoaDAO.getInstance(getContext()).count() == 2);
-		PessoaDAO.getInstance(getContext()).deleteByQueryPassingWhere("nome = 'Marcus'");
+		PessoaDAO.getInstance(getContext()).delete("nome = 'Marcus'");
 		assertTrue(PessoaDAO.getInstance(getContext()).count() == 1);
 	}
 
@@ -93,7 +93,7 @@ public class PessoaDAOTest extends AndroidTestCase {
 		saveMarcusAndCalixto();
 		
 		assertTrue(PessoaDAO.getInstance(getContext()).count() == 2);
-		PessoaDAO.getInstance(getContext()).deleteByQueryPassingWhere("nome = ?", new String[] {"Marcus"});
+		PessoaDAO.getInstance(getContext()).delete("nome = ?", new String[] {"Marcus"});
 		assertTrue(PessoaDAO.getInstance(getContext()).count() == 1);
 	}
 
