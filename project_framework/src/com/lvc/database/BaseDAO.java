@@ -133,11 +133,15 @@ public abstract class BaseDAO<T extends EntitiePersistable> extends BaseDAORefle
 	 * @throws AndroidDataBaseException
 	 */
 	public long insert(T entitie) throws AndroidDataBaseException {
+       return insert(entitie, true);
+	}
+	
+	private long insert(T entitie, boolean ignorePrimaryKey) throws AndroidDataBaseException {
 		try {
 
 			reopenConnectionIfClose();
 
-			ContentValues values = generateContentValues(entitie, true);
+			ContentValues values = generateContentValues(entitie, ignorePrimaryKey);
 			long insertedId = dataBase.insert(getTableName(), null, values); 
 			setPrimaryKeyValue(entitie, insertedId);
 			return insertedId;
@@ -148,6 +152,7 @@ public abstract class BaseDAO<T extends EntitiePersistable> extends BaseDAORefle
 			throw new AndroidDataBaseException(e, message);
 		}
 	}
+
 
 	/**
 	 * This method will try to save a Entitie or Update if it already exist at database.
@@ -183,7 +188,7 @@ public abstract class BaseDAO<T extends EntitiePersistable> extends BaseDAORefle
 		if(entitieToEdit != null) { // tem registro com esse ID
 			result = update(entitie);
 		} else {
-			result = insert(entitie);
+			result = insert(entitie,false);
 		}
 		
 		return result;
