@@ -112,6 +112,10 @@ public abstract class BaseDAOReflection<T extends EntitiePersistable> {
 		if(Modifier.isFinal(field.getModifiers())) {
 			return true;
 		}
+		
+		if(Modifier.isStatic(field.getModifiers())) {
+			return true;
+		}
 
 		if(field.isEnumConstant()) {
 			return true;
